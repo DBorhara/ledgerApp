@@ -1,7 +1,27 @@
 {
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "sourceType": "module"
+  },
+  "env": {
+    "node": true,
+    "es6": true,
+    "browser": true,
+    "jest": true
+  },
   "root": true,
-  "extends": ["fullstack", "prettier", "prettier/react"],
+  "extends": ["eslint:recommended", "plugin:react/recommended"],
   "rules": {
-    "semi": 0
+    "semi": 2,
+    "react/prop-types": 0
+  },
+  "plugins": ["react", "import", "react-hooks"],
+  "settings": {
+    "react": {
+      "version": "latest"
+    }
   }
 }
