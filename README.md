@@ -20,3 +20,9 @@
   Dummy Account 2:
   email: murphy@email.com
   password :123
+  
+- To run the app you can use the command:
+
+```
+npm run start-dev
+```
