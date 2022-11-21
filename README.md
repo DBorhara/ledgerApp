@@ -23,6 +23,6 @@
   
 - To run the app you can use the command:
 
-```
-npm run start-dev
-```
+  ```
+  npm run start-dev
+  ```
