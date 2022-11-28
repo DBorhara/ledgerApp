@@ -26,9 +26,7 @@ router.post("/increment", async (req, res, next) => {
       order: [["createdAt", "DESC"]],
     });
     total.amount += req.body.amount;
-    const incrementedTotal = await Total.create({
-      amount: total.amount,
-    });
+    await Total.create({ amount: total.amount, });
     res.json(creditLog);
   } catch (err) {
     next(err);
@@ -43,7 +41,28 @@ router.get("/:id", async (req, res, next) => {
         id: req.params.id,
       },
     });
-    res.json(creditByID);
+    if (!creditByID) {
+      next();
+    } else {
+      res.json(creditByID);
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+//Delete Credit by ID
+router.delete("/:id/delete", async (req, res, next) => {
+  try {
+    let creditToDelete = await Credit.findByPk(req.params.id);
+    const amountToDelete = creditToDelete.dataValues.amount;
+    const total = await Total.findOne({
+      order: [["createdAt", "DESC"]],
+    });
+    total.amount -= amountToDelete;
+    await Total.create({ amount: total.amount });
+    await creditToDelete.destroy();
+    res.sendStatus(204);
   } catch (err) {
     next(err);
   }
@@ -67,8 +86,12 @@ router.get("/:name", async (req, res, next) => {
 router.post("/reset", async (req, res, next) => {
   try {
     const destroy = await Credit.destroy({ where: {}, cascade: false });
-    const creditWipe = await Credit.create({ name: "start", amount: 0 });
-    res.json(creditWipe);
+    if (!destroy) {
+      next();
+    } else {
+      const creditWipe = await Credit.create({ name: "start", amount: 0 });
+      res.json(creditWipe);
+    }
   } catch (err) {
     next(err);
   }

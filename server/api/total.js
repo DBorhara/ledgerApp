@@ -18,10 +18,6 @@ router.get("/", async (req, res, next) => {
 
 router.post("/resetTotal", async (req, res, next) => {
   try {
-    const total = await Total.findOne({
-      order: [["createdAt", "DESC"]],
-    });
-
     const zeroedTotal = await Total.create({ amount: 0, userId: req.user.id });
     res.json(zeroedTotal);
   } catch (err) {

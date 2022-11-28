@@ -1,27 +1,43 @@
 import React, { useEffect } from "react";
-import { useDispatch, connect } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   applyCredit,
   applyDebit,
   fetchTotal,
   zeroedTotal,
-  fetchAllCredits,
-  fetchAllDebits,
   clearAllCredits,
   clearAllDebits,
 } from "../store";
 //Boostrap
 import { Form, Button, Alert } from "react-bootstrap";
 
-const LedgerCalc = (props) => {
-  const {
-    totalAmount,
-    handleCreditSubmit,
-    handleDebitSubmit,
-    fetchTotal,
-    zeroedTotal,
-  } = props;
+const LedgerCalc = () => {
+  //State
+  const totalAmount = useSelector((state) => state.total.amount);
+
+  //Dispatches
   const dispatch = useDispatch();
+  const handleClickZeroTotal = async () => {
+    await dispatch(clearAllCredits());
+    await dispatch(clearAllDebits());
+    await dispatch(zeroedTotal());
+  };
+
+  const handleCreditSubmit = async (evt) => {
+    evt.preventDefault();
+    const name = evt.target.name.value;
+    const amount = Number(evt.target.creditAmount.value);
+    await dispatch(applyCredit(name, amount));
+    await dispatch(fetchTotal());
+  };
+
+  const handleDebitSubmit = async (evt) => {
+    evt.preventDefault();
+    const name = evt.target.name.value;
+    const amount = Number(evt.target.debitAmount.value);
+    await dispatch(applyDebit(name, amount));
+    await dispatch(fetchTotal());
+  };
 
   useEffect(() => {
     dispatch(fetchTotal());
@@ -62,7 +78,7 @@ const LedgerCalc = (props) => {
           <Alert key={"success"} variant={"success"}>
             Total: ${totalAmount}
           </Alert>
-          <Button onClick={zeroedTotal} variant="warning">
+          <Button onClick={handleClickZeroTotal} variant="warning">
             Reset Total
           </Button>
         </div>
@@ -93,39 +109,4 @@ const LedgerCalc = (props) => {
   );
 };
 
-const mapState = (state) => {
-  return {
-    totalAmount: state.total.amount,
-  };
-};
-
-const mapDispatch = (dispatch) => {
-  return {
-    zeroedTotal: async () => {
-      await dispatch(clearAllCredits());
-      await dispatch(clearAllDebits());
-      return await dispatch(zeroedTotal());
-    },
-    fetchTotal,
-    async handleCreditSubmit(evt) {
-      evt.preventDefault();
-      const name = evt.target.name.value;
-      const amount = Number(evt.target.creditAmount.value);
-
-      await dispatch(applyCredit(name, amount));
-      await dispatch(fetchAllCredits);
-      return await dispatch(fetchTotal());
-    },
-    async handleDebitSubmit(evt) {
-      evt.preventDefault();
-      const name = evt.target.name.value;
-      const amount = Number(evt.target.debitAmount.value);
-
-      await dispatch(applyDebit(name, amount));
-      await dispatch(fetchAllDebits);
-      return await dispatch(fetchTotal());
-    },
-  };
-};
-
-export default connect(mapState, mapDispatch)(LedgerCalc);
+export default LedgerCalc;

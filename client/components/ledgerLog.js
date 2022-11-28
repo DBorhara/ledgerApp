@@ -1,18 +1,39 @@
 import React, { useEffect } from "react";
-import { useDispatch, connect } from "react-redux";
-import { fetchAllCredits, fetchAllDebits } from "../store";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchAllCredits,
+  fetchAllDebits,
+  deleteCredit,
+  deleteDebit,
+  fetchTotal,
+} from "../store";
 // Bootstrap
 import Table from "react-bootstrap/Table";
+import Button from "react-bootstrap/Button";
 
-const LedgerLog = (props) => {
-  const { email, allCredits, allDebits, fetchAllCredits, fetchAllDebits } =
-    props;
-
+const LedgerLog = () => {
+  //State
+  const email = useSelector((state) => state.user.email);
+  const allDebits = useSelector((state) => state.debits);
+  const allCredits = useSelector((state) => state.credits);
+  const total = useSelector((state) => state.total.amount);
+  //Dispatches
   const dispatch = useDispatch();
+
+  const handleDeleteCredit = async (id) => {
+    await dispatch(deleteCredit(id));
+    await dispatch(fetchTotal());
+  };
+
+  const handleDeleteDebit = async (id) => {
+    await dispatch(deleteDebit(id));
+    await dispatch(fetchTotal());
+  };
+
   useEffect(() => {
     dispatch(fetchAllCredits());
     dispatch(fetchAllDebits());
-  }, []);
+  }, [total]);
 
   return (
     <div
@@ -31,15 +52,24 @@ const LedgerLog = (props) => {
               <th>Debit</th>
               <th>Amount</th>
               <th>User</th>
+              <th>Delete Debit</th>
             </tr>
           </thead>
           <tbody>
             {allDebits.map((debit, i) => (
               <tr key={i}>
-                <td>{debit.id}</td>
+                <td>{i}</td>
                 <td>{debit.name}</td>
                 <td>{debit.amount}</td>
                 <td>{email}</td>
+                <td>
+                  <Button
+                    variant="warning"
+                    onClick={() => handleDeleteDebit(debit.id)}
+                  >
+                    DELETE
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -54,15 +84,24 @@ const LedgerLog = (props) => {
               <th>Credit</th>
               <th>Amount</th>
               <th>User</th>
+              <th>Delete Credit</th>
             </tr>
           </thead>
           <tbody>
             {allCredits.map((credit, i) => (
               <tr key={i}>
-                <td>{credit.id}</td>
+                <td>{i}</td>
                 <td>{credit.name}</td>
                 <td>{credit.amount}</td>
                 <td>{email}</td>
+                <td>
+                  <Button
+                    variant="warning"
+                    onClick={() => handleDeleteCredit(credit.id)}
+                  >
+                    DELETE
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -72,19 +111,4 @@ const LedgerLog = (props) => {
   );
 };
 
-const mapState = (state) => {
-  return {
-    allCredits: state.credits,
-    allDebits: state.debits,
-    email: state.user.email,
-  };
-};
-
-const mapDispatch = (dispatch) => {
-  return {
-    fetchAllCredits,
-    fetchAllDebits,
-  };
-};
-
-export default connect(mapState, mapDispatch)(LedgerLog);
+export default LedgerLog;

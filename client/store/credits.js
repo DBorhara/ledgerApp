@@ -4,6 +4,7 @@ import axios from "axios";
  * ACTION TYPES
  */
 const APPLY_CREDIT = "APPLY_CREDIT";
+const DELETE_CREDIT = "DELETE_CREDIT";
 const GET_ALL_CREDITS = "GET_ALL_CREDITS";
 const WIPE_CREDITS = "WIPE_CREDITS";
 
@@ -37,19 +38,27 @@ const wipeAllCredits = (wipedCredits) => {
  * THUNK CREATORS
  */
 
-export const applyCredit =
-  (creditName, creditAmount, username) => async (dispatch) => {
-    try {
-      const response = await axios.post("/api/credits/increment", {
-        name: creditName,
-        amount: creditAmount,
-      });
-      const { name, amount } = response.data;
-      dispatch(getApplyCredit(name, amount));
-    } catch (err) {
-      console.error(err);
-    }
-  };
+export const applyCredit = (creditName, creditAmount) => async (dispatch) => {
+  try {
+    const response = await axios.post("/api/credits/increment", {
+      name: creditName,
+      amount: creditAmount,
+    });
+    const { name, amount } = response.data;
+    dispatch(getApplyCredit(name, amount));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const deleteCredit = (creditId) => async (dispatch) => {
+  try {
+    await axios.delete(`/api/credits/${creditId}/delete`);
+    dispatch(fetchAllCredits());
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 export const fetchAllCredits = () => async (dispatch) => {
   try {
@@ -78,6 +87,8 @@ export const creditsReducer = function (state = initialState.credits, action) {
       return action.payload;
     case APPLY_CREDIT:
       return [...state, action.payload];
+    case DELETE_CREDIT:
+      return state;
     case WIPE_CREDITS:
       return state;
     default:

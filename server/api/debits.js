@@ -28,9 +28,7 @@ router.post("/decrement", async (req, res, next) => {
     });
     total.amount -= req.body.amount;
 
-    const decrementedTotal = await Total.create({
-      amount: total.amount,
-    });
+    await Total.create({ amount: total.amount });
     res.json(debitLog);
   } catch (err) {
     next(err);
@@ -45,7 +43,28 @@ router.get("/:id", async (req, res, next) => {
         id: req.params.id,
       },
     });
-    res.json(debitByID);
+    if (!debitByID) {
+      next();
+    } else {
+      res.json(debitByID);
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+//Delete Debit by ID
+router.delete("/:id/delete", async (req, res, next) => {
+  try {
+    let debitToDelete = await Debit.findByPk(req.params.id);
+    const amountToAdd = debitToDelete.dataValues.amount;
+    const total = await Total.findOne({
+      order: [["createdAt", "DESC"]],
+    });
+    total.amount += amountToAdd;
+    await Total.create({ amount: total.amount, });
+    await debitToDelete.destroy();
+    res.sendStatus(204);
   } catch (err) {
     next(err);
   }
@@ -69,8 +88,12 @@ router.get("/:name", async (req, res, next) => {
 router.post("/reset", async (req, res, next) => {
   try {
     const destroy = await Debit.destroy({ where: {}, cascase: false });
-    const debitWipe = await Debit.create({ name: "start", amount: 0 });
-    res.json(debitWipe);
+    if (!destroy) {
+      next();
+    } else {
+      const debitWipe = await Debit.create({ name: "start", amount: 0 });
+      res.json(debitWipe);
+    }
   } catch (err) {
     next(err);
   }

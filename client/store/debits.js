@@ -4,6 +4,7 @@ import axios from "axios";
  * ACTION TYPES
  */
 const APPLY_DEBIT = "APPLY_DEBIT";
+const DELETE_DEBIT = "DELETE_DEBIT";
 const GET_ALL_DEBITS = "GET_ALL_DEBITS";
 const WIPE_DEBITS = "WIPE_DEBITS";
 
@@ -32,6 +33,7 @@ const wipeAllDebits = (wipedDebits) => {
     payload: wipedDebits,
   };
 };
+
 /**
  * THUNK CREATORS
  */
@@ -44,6 +46,15 @@ export const applyDebit = (debitName, debitAmount) => async (dispatch) => {
     });
     const { name, amount } = response.data;
     dispatch(getApplyDebit(name, amount));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+export const deleteDebit = (debitId) => async (dispatch) => {
+  try {
+    await axios.delete(`/api/debits/${debitId}/delete`);
+    dispatch(fetchAllDebits());
   } catch (err) {
     console.error(err);
   }
@@ -76,6 +87,8 @@ export const debitsReducer = function (state = initialState.debits, action) {
       return action.payload;
     case APPLY_DEBIT:
       return [...state, action.payload];
+    case DELETE_DEBIT:
+      return state;
     case WIPE_DEBITS:
       return state;
     default:
